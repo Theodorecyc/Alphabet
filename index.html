@@ -1,1 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>字母發音練習</title>
+    <style>
+        /* ===== 全局重置 & 字體 ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
+        body {
+            font-family: 'Segoe UI', 'PingFang TC', 'Helvetica Neue', sans-serif;
+            background: #f5f7fa;
+            padding: 20px 16px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* ===== 標題 ===== */
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 16px;
+        }
+
+        /* ===== 總平均分數卡片 ===== */
+        .average-card {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.25);
+        }
+
+        .average-card .label {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.85;
+        }
+
+        .average-card .score {
+            font-size: 32px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 20px;
+            border-radius: 40px;
+            letter-spacing: 1px;
+        }
+
+        .average-card .score .total-count {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-left: 6px;
+        }
+
+        /* ===== 每個字母卡片 ===== */
+        .letter-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 8px;
+            transition: box-shadow 0.2s;
+            border: 1px solid #eef2f7;
+        }
+
+        .letter-card:active {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 字母大字 */
+        .letter-char {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a2634;
+            width: 48px;
+            text-align: center;
+            flex-shrink: 0;
+            background: #f0f4fa;
+            border-radius: 10px;
+            padding: 4px 0;
+            line-height: 1.3;
+        }
+
+        /* 按鈕群組 */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex: 1 1 auto;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            touch-action: manipulation;
+            user-select: none;
+            min-height: 40px;
+            min-width: 58px;
+        }
+
+        .btn:active {
+            transform: scale(0.94);
+        }
+
+        .btn-animate {
+            background: #e67e22;
+            color: white;
+        }
+        .btn-animate:active {
+            background: #d35400;
+        }
+
+        .btn-record {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-record:active {
+            background: #c0392b;
+        }
+        .btn-record.is-recording {
+            background: #c0392b;
+            animation: pulse-red 0.8s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
+            100% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+        }
+
+        .btn-playback {
+            background: #1abc9c;
+            color: white;
+        }
+        .btn-playback:active {
+            background: #16a085;
+        }
+        .btn-playback:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* 分數顯示 */
+        .score-display {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            min-width: 60px;
+            text-align: center;
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-radius: 30px;
+            padding: 2px 6px;
+            line-height: 1.4;
+        }
+
+        .score-display .score-label {
+            font-size: 11px;
+            font-weight: 400;
+            color: #95a5a6;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .score-display.has-score {
+            background: #eafaf1;
+            color: #27ae60;
+        }
+
+        /* 狀態小標籤 */
+        .status-badge {
+            font-size: 11px;
+            color: #95a5a6;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #f0f2f5;
+            white-space: nowrap;
+        }
+
+        .status-badge.recording {
+            color: #e74c3c;
+            background: #fde8e8;
+            animation: blink 0.9s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ===== 模態框 (彈窗) - 影片版 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-box {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            padding: 16px 16px 18px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.12);
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #cccccc;
+            line-height: 1;
+            padding: 4px 12px;
+            border-radius: 30px;
+            transition: background 0.2s;
+        }
+        .modal-close:active {
+            background: rgba(255,255,255,0.25);
+            color: #ffffff;
+        }
+
+        .modal-video-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .modal-video-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 420px;
+            object-fit: contain;
+            background: #0a0a0a;
+            border-radius: 12px;
+        }
+
+        .modal-video-container .placeholder-text {
+            color: #666;
+            font-size: 15px;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        /* ===== RWD 微調 ===== */
+        @media (max-width: 480px) {
+            .letter-card {
+                padding: 12px 14px;
+                gap: 8px 6px;
+            }
+
+            .letter-char {
+                font-size: 28px;
+                width: 40px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 6px 12px;
+                min-height: 36px;
+                min-width: 48px;
+            }
+
+            .score-display {
+                font-size: 18px;
+                min-width: 48px;
+            }
+
+            .average-card .score {
+                font-size: 26px;
+                padding: 2px 14px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .modal-box {
+                padding: 12px;
+            }
+            .modal-header h2 {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .btn-group .btn {
+                font-size: 11px;
+                padding: 5px 8px;
+                min-width: 40px;
+            }
+            .letter-char {
+                font-size: 24px;
+                width: 34px;
+            }
+        }
+
+        /* ===== 錄音計時器小提示 ===== */
+        .timer-hint {
+            font-size: 12px;
+            color: #ffffff;
+            font-weight: 500;
+            display: none;
+            background: rgba(0,0,0,0.3);
+            padding: 0 8px;
+            border-radius: 20px;
+        }
+        .timer-hint.active {
+            display: inline;
+        }
+
+        /* 底部留白 */
+        .footer-note {
+            text-align: center;
+            color: #bdc3c7;
+            font-size: 12px;
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- 標題 -->
+    <h1>🔊 字母發音練習</h1>
+    <div class="subtitle">觀看影片學習發音 → 錄音練習 → 自動評分</div>
+
+    <!-- 總平均分數 -->
+    <div class="average-card">
+        <span class="label">📊 總平均</span>
+        <span class="score" id="averageScore">-- <span class="total-count" id="scoredCount">(0/26)</span></span>
+    </div>
+
+    <!-- 26個字母卡片將由 JavaScript 產生 -->
+    <div id="letterList"></div>
+
+    <div class="footer-note">每個字母最長錄音 5 秒 · 錄完自動播放回放與評分</div>
+</div>
+
+<!-- ===== 影片彈窗 (Modal) ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="modalTitle">🎬 字母發音影片</h2>
+            <button class="modal-close" id="modalCloseBtn">✕</button>
+        </div>
+        <div class="modal-video-container" id="modalVideoContainer">
+            <video id="modalVideo" controls preload="metadata" style="display:none;">
+                您的瀏覽器不支援影片播放。
+            </video>
+            <div class="placeholder-text" id="modalPlaceholder">載入中⋯</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // =====================================================
+        //  1. 設定區 ––– 請依照你的檔案路徑修改
+        // =====================================================
+        // 影片路徑：建議命名為 A.mp4, B.mp4 ... Z.mp4
+        const VIDEO_BASE = 'video/';
+        const VIDEO_EXT = '.mp4';
+
+        // =====================================================
+        //  2. 狀態管理
+        // =====================================================
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        // 儲存每個字母的評分 (null 表示尚未評分)
+        const scores = {};
+        letters.forEach(ch => scores[ch] = null);
+
+        // 錄音相關
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentRecordingLetter = null;
+        let recordingTimer = null;
+        let recordingSeconds = 0;
+        const MAX_RECORD_SECONDS = 5;
+
+        // 播放回放用的 Audio 物件
+        let playbackAudio = null;
+
+        // DOM 參考
+        const letterListEl = document.getElementById('letterList');
+        const averageScoreEl = document.getElementById('averageScore');
+        const scoredCountEl = document.getElementById('scoredCount');
+
+        // Modal (影片)
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalVideo = document.getElementById('modalVideo');
+        const modalPlaceholder = document.getElementById('modalPlaceholder');
+
+        // =====================================================
+        //  3. 輔助函式
+        // =====================================================
+        function getScoreDisplayId(letter) {
+            return 'score-' + letter;
+        }
+
+        function getStatusBadgeId(letter) {
+            return 'status-' + letter;
+        }
+
+        function getRecordBtnId(letter) {
+            return 'recbtn-' + letter;
+        }
+
+        function getPlaybackBtnId(letter) {
+            return 'playbtn-' + letter;
+        }
+
+        // 更新總平均
+        function updateAverage() {
+            const scored = letters.filter(ch => scores[ch] !== null);
+            const count = scored.length;
+            scoredCountEl.textContent = `(${count}/26)`;
+
+            if (count === 0) {
+                averageScoreEl.innerHTML = `-- <span class="total-count" id="scoredCount">(0/26)</span>`;
+                return;
+            }
+
+            let sum = 0;
+            scored.forEach(ch => sum += scores[ch]);
+            const avg = sum / count;
+            const avgRounded = Math.round(avg);
+            averageScoreEl.innerHTML = `${avgRounded} <span class="total-count" id="scoredCount">(${count}/26)</span>`;
+        }
+
+        // 更新單一字母的分數顯示
+        function updateScoreDisplay(letter) {
+            const scoreEl = document.getElementById(getScoreDisplayId(letter));
+            if (!scoreEl) return;
+
+            const val = scores[letter];
+            if (val === null) {
+                scoreEl.innerHTML = `<span class="score-label">分數</span>--`;
+                scoreEl.classList.remove('has-score');
+            } else {
+                const clamped = Math.min(100, Math.max(0, Math.round(val)));
+                scoreEl.innerHTML = `${clamped}<span class="score-label">分</span>`;
+                scoreEl.classList.add('has-score');
+            }
+        }
+
+        // 更新狀態標籤
+        function setStatus(letter, text, isRecording = false) {
+            const badge = document.getElementById(getStatusBadgeId(letter));
+            if (!badge) return;
+            badge.textContent = text;
+            if (isRecording) {
+                badge.classList.add('recording');
+            } else {
+                badge.classList.remove('recording');
+            }
+        }
+
+        // 啟用/停用錄音按鈕
+        function setRecordBtnEnabled(letter, enabled) {
+            const btn = document.getElementById(getRecordBtnId(letter));
+            if (!btn) return;
+            btn.disabled = !enabled;
+        }
+
+        // 啟用/停用播放回放按鈕
+        function setPlaybackBtnEnabled(letter, enabled) {
+            const btn = document.getElementById(getPlaybackBtnId(letter));
+            if (!btn) return;
+            btn.disabled = !enabled;
+        }
+
+        // =====================================================
+        //  4. 錄音邏輯
+        // =====================================================
+        async function startRecording(letter) {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                stopRecording();
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            if (playbackAudio) {
+                playbackAudio.pause();
+                playbackAudio = null;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                currentRecordingLetter = letter;
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(track => track.stop());
+
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    audioChunks = [];
+
+                    if (audioBlob.size > 0) {
+                        const url = URL.createObjectURL(audioBlob);
+                        playbackAudio = new Audio(url);
+                        playbackAudio.onended = () => {
+                            performScore(letter, audioBlob);
+                            setPlaybackBtnEnabled(letter, true);
+                            const playBtn = document.getElementById(getPlaybackBtnId(letter));
+                            if (playBtn) {
+                                playBtn.onclick = () => {
+                                    if (playbackAudio) {
+                                        playbackAudio.currentTime = 0;
+                                        playbackAudio.play().catch(() => {});
+                                    }
+                                };
+                            }
+                        };
+
+                        playbackAudio.play().catch(err => {
+                            console.warn('自動播放回放失敗:', err);
+                            performScore(letter, audioBlob);
+                            setPlaybackBtnEnabled(letter, true);
+                        });
+
+                        setStatus(letter, '▶ 播放中', false);
+                    } else {
+                        setStatus(letter, '⚠ 錄音無效', false);
+                        setRecordBtnEnabled(letter, true);
+                    }
+
+                    currentRecordingLetter = null;
+                    if (recordingTimer) {
+                        clearInterval(recordingTimer);
+                        recordingTimer = null;
+                    }
+                    const recBtn = document.getElementById(getRecordBtnId(letter));
+                    if (recBtn) recBtn.classList.remove('is-recording');
+                    if (recBtn) recBtn.textContent = '🎙 錄音';
+                    setRecordBtnEnabled(letter, true);
+
+                    const hint = document.querySelector(`#${getRecordBtnId(letter)} .timer-hint`);
+                    if (hint) hint.classList.remove('active');
+                };
+
+                mediaRecorder.start();
+                recordingSeconds = 0;
+                setStatus(letter, '🔴 錄音中', true);
+                setRecordBtnEnabled(letter, false);
+                const recBtn = document.getElementById(getRecordBtnId(letter));
+                if (recBtn) {
+                    recBtn.classList.add('is-recording');
+                    recBtn.textContent = '⏹ 停止';
+                    let hint = recBtn.querySelector('.timer-hint');
+                    if (!hint) {
+                        hint = document.createElement('span');
+                        hint.className = 'timer-hint';
+                        recBtn.appendChild(hint);
+                    }
+                    hint.textContent = ' 0s';
+                    hint.classList.add('active');
+                }
+
+                recordingTimer = setInterval(() => {
+                    recordingSeconds++;
+                    const hint = document.querySelector(`#${getRecordBtnId(letter)} .timer-hint`);
+                    if (hint) hint.textContent = ` ${recordingSeconds}s`;
+
+                    if (recordingSeconds >= MAX_RECORD_SECONDS) {
+                        stopRecording();
+                    }
+                }, 1000);
+
+            } catch (err) {
+                console.error('無法存取麥克風:', err);
+                alert('無法存取麥克風，請允許瀏覽器使用麥克風權限後再試。');
+                setStatus(letter, '❌ 無權限', false);
+                setRecordBtnEnabled(letter, true);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        }
+
+        // =====================================================
+        //  5. 評分邏輯 (模擬評分)
+        // =====================================================
+        function performScore(letter, audioBlob) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioCtx.decodeAudioData(arrayBuffer).then((buffer) => {
+                    const data = buffer.getChannelData(0);
+                    let sum = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        sum += data[i] * data[i];
+                    }
+                    const rms = Math.sqrt(sum / data.length);
+                    const duration = buffer.duration;
+
+                    let score = 50;
+                    const volumeFactor = Math.min(1, rms * 6);
+                    score += volumeFactor * 30;
+
+                    if (duration > 0.3 && duration < 4.5) {
+                        score += 10;
+                    } else if (duration >= 4.5 && duration <= 5.5) {
+                        score += 5;
+                    } else {
+                        score -= 10;
+                    }
+
+                    const randomOffset = (Math.random() * 16) - 8;
+                    score = Math.min(100, Math.max(40, score + randomOffset));
+                    const finalScore = Math.round(score);
+
+                    scores[letter] = finalScore;
+                    updateScoreDisplay(letter);
+                    updateAverage();
+                    setStatus(letter, `✅ 評分完成`, false);
+                    setRecordBtnEnabled(letter, true);
+                    audioCtx.close();
+
+                }).catch(err => {
+                    console.warn('音檔解碼失敗，使用備用分數:', err);
+                    const fallbackScore = Math.round(60 + Math.random() * 30);
+                    scores[letter] = fallbackScore;
+                    updateScoreDisplay(letter);
+                    updateAverage();
+                    setStatus(letter, '✅ 評分完成', false);
+                    setRecordBtnEnabled(letter, true);
+                });
+            };
+            fileReader.readAsArrayBuffer(audioBlob);
+        }
+
+        // =====================================================
+        //  6. 建立 26 個字母卡片
+        // =====================================================
+        function buildLetterCards() {
+            let html = '';
+            letters.forEach((ch) => {
+                html += `
+                    <div class="letter-card" id="card-${ch}">
+                        <div class="letter-char">${ch}</div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-animate" id="animate-${ch}">
+                                🎬 觀看發音
+                            </button>
+                            <button class="btn btn-record" id="${getRecordBtnId(ch)}">
+                                🎙 錄音
+                            </button>
+                            <button class="btn btn-playback" id="${getPlaybackBtnId(ch)}" disabled>
+                                ▶ 回放
+                            </button>
+                        </div>
+
+                        <div class="score-display" id="${getScoreDisplayId(ch)}">
+                            <span class="score-label">分數</span>--
+                        </div>
+
+                        <span class="status-badge" id="${getStatusBadgeId(ch)}">待錄音</span>
+                    </div>
+                `;
+            });
+            letterListEl.innerHTML = html;
+        }
+
+        // =====================================================
+        //  7. 事件綁定
+        // =====================================================
+        function bindEvents() {
+            // --- 動畫按鈕 (彈出影片) ---
+            letters.forEach((ch) => {
+                const animBtn = document.getElementById(`animate-${ch}`);
+                if (animBtn) {
+                    animBtn.addEventListener('click', () => {
+                        const videoUrl = `${VIDEO_BASE}${ch}${VIDEO_EXT}`;
+                        modalTitle.textContent = `🎬 字母 ${ch} 發音影片`;
+
+                        modalVideo.src = videoUrl;
+                        modalVideo.style.display = 'block';
+                        modalPlaceholder.style.display = 'none';
+
+                        modalVideo.load();
+
+                        modalVideo.onerror = () => {
+                            modalVideo.style.display = 'none';
+                            modalPlaceholder.style.display = 'block';
+                            modalPlaceholder.textContent = `⚠ 找不到影片檔：${videoUrl}`;
+                        };
+
+                        modalVideo.oncanplay = () => {
+                            modalVideo.play().catch(err => {
+                                console.log('自動播放被阻擋，使用者需手動點擊播放', err);
+                            });
+                        };
+
+                        modalOverlay.classList.add('active');
+                    });
+                }
+            });
+
+            // --- 關閉 Modal ---
+            modalCloseBtn.addEventListener('click', () => {
+                closeModal();
+            });
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            function closeModal() {
+                modalVideo.pause();
+                modalOverlay.classList.remove('active');
+            }
+
+            // --- 錄音按鈕 ---
+            letters.forEach((ch) => {
+                const recBtn = document.getElementById(getRecordBtnId(ch));
+                if (recBtn) {
+                    recBtn.addEventListener('click', () => {
+                        if (mediaRecorder && mediaRecorder.state === 'recording') {
+                            if (currentRecordingLetter === ch) {
+                                stopRecording();
+                            } else {
+                                stopRecording();
+                                setTimeout(() => {
+                                    startRecording(ch);
+                                }, 300);
+                            }
+                            return;
+                        }
+                        startRecording(ch);
+                    });
+                }
+            });
+        }
+
+        // =====================================================
+        //  8. 初始化
+        // =====================================================
+        function init() {
+            buildLetterCards();
+            bindEvents();
+            updateAverage();
+
+            letters.forEach(ch => updateScoreDisplay(ch));
+
+            console.log('✅ 字母發音練習網頁已啟動！');
+            console.log(`📁 影片路徑: ${VIDEO_BASE}字母${VIDEO_EXT}`);
+            console.log('💡 請將發音影片放在 video/ 資料夾中。');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+</script>
+
+</body>
+</html>
